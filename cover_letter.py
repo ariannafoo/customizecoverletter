@@ -9,6 +9,7 @@ class Label(QLabel):
     This class represents a clickable icon and label side by side. 
     """
             
+    # simpler way to do this??
     def __init__(self, parent=None):
         super(Label, self).__init__(parent)
 
