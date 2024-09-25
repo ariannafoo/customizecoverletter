@@ -76,7 +76,7 @@ class MainWindow(QMainWindow):
             QLineEdit(),
             QLineEdit(),
             QLineEdit(),
-            Label(self)
+            Label()
         ]
         # Setting input placeholders
         self.inputs[0].setPlaceholderText("e.g. Vaughan"),
@@ -116,10 +116,16 @@ class MainWindow(QMainWindow):
             label.setStyleSheet("background-color: transparent; color: black")
             input.setFixedSize(300, 30)
             input.setStyleSheet("""
-                background-color: white; 
-                color: black; 
-                border: 1px solid lightgray; 
-                border-radius: 10px;
+                QLineEdit, Label{
+                    background-color: white; 
+                    color: black; 
+                    border: 1px solid lightgray; 
+                    border-radius: 10px;
+                }
+                
+                QLineEdit:focus {
+                    border: 1px solid blue;
+                }
             """)
 
             # Adding to widget vertical layout and center horizontally
