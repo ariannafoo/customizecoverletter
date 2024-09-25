@@ -12,7 +12,7 @@ class Label(QLabel):
     def __init__(self, parent=None):
         super(Label, self).__init__(parent)
 
-        self.icon_path = 'blue_file.jpeg'  # Path to your icon
+        self.icon_path = 'images/blue_file.jpeg'  # Path to your icon
         self.setAlignment(Qt.AlignVCenter)
         self.setText(self.create_html("No file selected."))
 
@@ -51,7 +51,7 @@ class MainWindow(QMainWindow):
         
         self.setStyleSheet("""
             QMainWindow {
-                background-image: url('background.png'); 
+                background-image: url('images/background.png'); 
                 background-repeat: no-repeat; 
                 background-position: center;
             }

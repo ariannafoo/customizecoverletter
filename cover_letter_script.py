@@ -2,7 +2,7 @@
 from docx import Document
 from docx.shared import Pt
 
-document = Document("Arianna_Foo_Cover_Letter.docx")
+document = Document("documents/Arianna_Foo_Cover_Letter.docx")
 all_paragraphs = document.paragraphs
 
 # Defining styles for paragraphs
@@ -10,8 +10,6 @@ style = document.styles['Normal']
 font = style.font
 font.name = 'Calibri'
 font.size = Pt(11)
-
-
 
 def is_empty(data):
     """
