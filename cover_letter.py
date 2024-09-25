@@ -90,7 +90,7 @@ class MainWindow(QMainWindow):
             background-color: blue; 
             border-radius: 10px;
         """)
-        #self.button.clicked.
+        #self.button.clicked. > need to edit
 
         # Create form container widget to hold form
         self.form_cont = QWidget()
