@@ -1,4 +1,8 @@
-from PyQt5.QtCore import QSize, Qt
+import sys
+from datetime import datetime
+import calendar
+
+from PyQt5.QtCore import QSize, Qt, QDate
 from PyQt5.QtGui import *
 from PyQt5.QtWidgets import *
 
@@ -58,7 +62,7 @@ class MainWindow(QMainWindow):
             }
         """)
 
-        self.setFixedSize(QSize(800, 600))
+        self.setFixedSize(QSize(800, 800))
     
     def setup_ui(self):
         """
@@ -96,7 +100,7 @@ class MainWindow(QMainWindow):
         # Create form container widget to hold form
         self.form_cont = QWidget()
         self.form_cont.setObjectName("formContainer")
-        self.form_cont.setFixedHeight(350)
+        self.form_cont.setFixedHeight(600)
         self.form_cont.setStyleSheet("""
             #formContainer {
             background-color: white; 
@@ -108,6 +112,24 @@ class MainWindow(QMainWindow):
         # Create vertical layout
         self.v_layout = QVBoxLayout() 
         self.v_layout.addStretch() # Add stretchable space at the top to push widgets downward
+
+        # Create calendar
+        self.calendar = QCalendarWidget(self)
+        self.calendar.setGridVisible(True)
+
+
+        # Setting date range
+        today = QDate.currentDate()
+        self.calendar.setMinimumDate(today.addDays(-7))
+        self.calendar.setMaximumDate(today.addDays(+7))
+
+        # Getting date
+        self.calendar.clicked.connect(lambda date: print(date.toString("MMMM d, yyyy")))
+
+        # Add calendar to layout
+        self.v_layout.addWidget(self.calendar, alignment=Qt.AlignCenter)
+
+    
 
         # Add labels and inputs to the form container
         for label, input in zip(self.labels, self.inputs):
