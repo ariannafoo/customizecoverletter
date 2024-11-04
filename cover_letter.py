@@ -197,7 +197,22 @@ class MainWindow(QMainWindow):
         layout.addWidget(label)
 
         back_button = QPushButton("Go Back")
-        back_button.clicked.connect(self.setup_ui)  # Set form page again when clicked
+        back_button.setFixedSize(200, 30)
+        back_button.clicked.connect(self.setup_ui) 
+        back_button.setStyleSheet("""
+            
+            QPushButton{
+                background-color: #398cef; 
+                color: white;
+                border-radius: 10px;
+            }
+            
+            QPushButton:pressed {
+                background-color: #7bc8da;
+                color: white;
+            }              
+        """)
+
         layout.addWidget(back_button)
 
         new_page.setLayout(layout)
@@ -240,8 +255,8 @@ class MainWindow(QMainWindow):
         city = self.inputs[0].text()
         position = self.inputs[2].text()
 
-        new_cover_letter = cover_letter_script.CoverLetter(path, self.date, company, city, position)
-        new_cover_letter.replacePlaceholders()
+       # new_cover_letter = cover_letter_script.CoverLetter(path, self.date, company, city, position)
+       # new_cover_letter.replacePlaceholders()
 
     def update_selected_date(self, date):
         # The 'date' argument is automatically passed by the signal
