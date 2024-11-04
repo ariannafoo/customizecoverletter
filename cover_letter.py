@@ -91,11 +91,20 @@ class MainWindow(QMainWindow):
         # Create "Replace" button
         self.button = QPushButton("Replace")
         self.button.setFixedSize(200, 30)
+        self.button.clicked.connect(self.on_replace_btn_clicked)
         self.button.setStyleSheet("""
-            background-color: blue; 
-            border-radius: 10px;
+            
+            QPushButton{
+                background-color: #398cef; 
+                color: white;
+                border-radius: 10px;
+            }
+            
+            QPushButton:pressed {
+                background-color: #7bc8da;
+                color: white;
+            }              
         """)
-        #self.button.clicked. > need to edit
 
         # Create form container widget to hold form
         self.form_cont = QWidget()
@@ -180,13 +189,32 @@ class MainWindow(QMainWindow):
         self.container.setLayout(self.outer_layout)
         self.setCentralWidget(self.container)
 
+    def on_replace_btn_clicked(self):
+        if any(input.text() == "" for input in self.inputs):
+            self.showMessageBox()
+
+    def showMessageBox(self):
+        msg = QMessageBox() 
+        msg.setIcon(QMessageBox.Information) 
+  
+        # setting message for Message Box 
+        msg.setText("Please complete all fields to continue.") 
+        
+        # setting Message box window title 
+        msg.setWindowTitle("Incomplete Fields") 
+        
+        # declaring buttons on Message Box 
+        msg.setStandardButtons(QMessageBox.Ok) 
+        
+        # start the app 
+        msg.exec_() 
+
     def get_user_values(self):
         """
         Return user values from corresponding fields.
         """
         
-    def on_replace_btn_clicked():
-        pass
+    
 
     def replace_btn_toggled(self, checked):
         pass
