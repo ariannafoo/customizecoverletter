@@ -189,7 +189,7 @@ class MainWindow(QMainWindow):
         self.container.setLayout(self.outer_layout)
         self.setCentralWidget(self.container)
 
-    def create_second_page(self):
+    def create_preview_page(self):
         new_page = QWidget()
         layout = QVBoxLayout()
 
@@ -213,7 +213,7 @@ class MainWindow(QMainWindow):
             }              
         """)
 
-        layout.addWidget(back_button)
+        layout.addWidget(back_button, alignment=Qt.AlignCenter)
 
         new_page.setLayout(layout)
         self.setCentralWidget(new_page)
@@ -228,7 +228,7 @@ class MainWindow(QMainWindow):
             self.showMessageBox()
         else:
             self.get_user_values()
-            self.create_second_page()
+            self.create_preview_page()
 
     def showMessageBox(self):
         msg = QMessageBox() 
