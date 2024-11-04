@@ -31,7 +31,7 @@ class CoverLetter():
         """
         Define the document styles for the cover letter.
         """
-        style = document.styles['Normal']
+        style = self.document.styles['Normal']
         font = style.font
         font.name = 'Calibri'
         font.size = Pt(11)
@@ -64,11 +64,13 @@ class CoverLetter():
 
 
 
+
 """ TODO
 - option to save as pdf
 - choose where to save
 - create new folder to save??
 - save job to excel sheet
+- better way to open folder label
 
 def replace_placeholders(docx_path, replacements, output_path):
 

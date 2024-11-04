@@ -1,7 +1,7 @@
 import sys
 from datetime import datetime
 import calendar
-#import cover_letter_script
+import cover_letter_script
 
 from PyQt5.QtCore import QSize, Qt, QDate
 from PyQt5.QtGui import *
@@ -46,8 +46,7 @@ class MainWindow(QMainWindow):
         self._replacements = []
 
         self.configure_window()
-        self.setup_ui()
-
+        self.setup_ui()          # First page with the form
     
     def configure_window(self):
         """
@@ -127,19 +126,19 @@ class MainWindow(QMainWindow):
         self.calendar = QCalendarWidget(self)
         self.calendar.setGridVisible(True)
 
-
         # Setting date range
         today = QDate.currentDate()
         self.calendar.setMinimumDate(today.addDays(-7))
         self.calendar.setMaximumDate(today.addDays(+7))
 
+        # Setting up date variable
+        self.date = today
+
         # Getting date
-        self.calendar.clicked.connect(lambda date: print(date.toString("MMMM d, yyyy")))
+        self.calendar.clicked.connect(self.update_selected_date)
 
         # Add calendar to layout
         self.v_layout.addWidget(self.calendar, alignment=Qt.AlignCenter)
-
-    
 
         # Add labels and inputs to the form container
         for label, input in zip(self.labels, self.inputs):
@@ -190,11 +189,31 @@ class MainWindow(QMainWindow):
         self.container.setLayout(self.outer_layout)
         self.setCentralWidget(self.container)
 
+    def create_second_page(self):
+        new_page = QWidget()
+        layout = QVBoxLayout()
+
+        label = QLabel("New Page - Replacement Complete")
+        layout.addWidget(label)
+
+        back_button = QPushButton("Go Back")
+        back_button.clicked.connect(self.setup_ui)  # Set form page again when clicked
+        layout.addWidget(back_button)
+
+        new_page.setLayout(layout)
+        self.setCentralWidget(new_page)
+
     def on_replace_btn_clicked(self):
+
+         # need to parse input path because it includes html
+        labels = self.inputs[3].text()
+        path = labels.split('"/> ')[-1]
         
-        if any(input.text() == "" for input in self.inputs):
+        if any(input.text() == "" for input in self.inputs) or (path == "No file selected."):
             self.showMessageBox()
-        print(self.inputs[3].text())
+        else:
+            self.get_user_values()
+            self.create_second_page()
 
     def showMessageBox(self):
         msg = QMessageBox() 
@@ -216,13 +235,18 @@ class MainWindow(QMainWindow):
         """
         Return user values from corresponding fields.
         """
-        
-    
+        path = self.inputs[3].text().split('"/> ')[-1]
+        company = self.inputs[1].text()
+        city = self.inputs[0].text()
+        position = self.inputs[2].text()
 
-    def replace_btn_toggled(self, checked):
-        pass
-        
+        new_cover_letter = cover_letter_script.CoverLetter(path, self.date, company, city, position)
+        new_cover_letter.replacePlaceholders()
 
+    def update_selected_date(self, date):
+        # The 'date' argument is automatically passed by the signal
+        self.date = date.toString("MMMM d, yyyy")
+        
 def main():
     app = QApplication([])
 
