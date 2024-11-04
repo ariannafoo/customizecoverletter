@@ -1,6 +1,7 @@
 import sys
 from datetime import datetime
 import calendar
+#import cover_letter_script
 
 from PyQt5.QtCore import QSize, Qt, QDate
 from PyQt5.QtGui import *
@@ -190,8 +191,10 @@ class MainWindow(QMainWindow):
         self.setCentralWidget(self.container)
 
     def on_replace_btn_clicked(self):
+        
         if any(input.text() == "" for input in self.inputs):
             self.showMessageBox()
+        print(self.inputs[3].text())
 
     def showMessageBox(self):
         msg = QMessageBox() 

@@ -2,66 +2,63 @@
 from docx import Document
 from docx.shared import Pt
 
-document = Document("documents/Arianna_Foo_Cover_Letter.docx")
-all_paragraphs = document.paragraphs
+# document = Document("documents/Arianna_Foo_Cover_Letter.docx")
+# all_paragraphs = document.paragraphs
 
-# Defining styles for paragraphs
-style = document.styles['Normal']
-font = style.font
-font.name = 'Calibri'
-font.size = Pt(11)
+class CoverLetter():
 
-def is_empty(data):
-    """
-    Return true if data structure is empty, otherwise false.
+    def __init__(self, document_path, date, company, city, position):
 
-    Can also check with len method.
-    """
-    return not data
+        # User inputs
+        self.document = Document(document_path)
+        self.date = date
+        self.company = company
+        self.city = city
+        self.position = position
 
-def get_non_empty_input(user_prompt):
-    """
-    Check if user input is non-empty and return result.
+        # Define style
+        self.style = self.defineDocumentStyles()
 
-    >>> company_name = get_non_empty_input("Enter company name: ")
-    >>> Enter company name: 
+        # Create dictionary based on user input - will replace placeholders in doc
+        self.replacements = {
+            '{DATE}': self.date,
+            '{COMPANY}': self.company,
+            '{CITY}': self.city,
+            '{POSITION}': self.position
+        }
+
+    def defineDocumentStyles(self):
+        """
+        Define the document styles for the cover letter.
+        """
+        style = document.styles['Normal']
+        font = style.font
+        font.name = 'Calibri'
+        font.size = Pt(11)
+
+        return style
     
-    >>> Enter company name: 
-    Airbnb
-    >>> print(company_name)
-    Airbnb
-    """
-    user_input = ""
+    # TODO: edit colour and font in one placeholder
+    def replacePlaceholders(self):
+        """
+        Replace placeholders in the cover letter and save new cover letter.
+        """
+        all_paragraphs = self.document.paragraphs
 
-    while is_empty(user_input):
-        print(user_prompt)
-        user_input = input()
-    return user_input
+        for key, value in self.replacements.items():
+            for paragraph in all_paragraphs:
+                if key in paragraph.text:
+                    paragraph.text = paragraph.text.replace(key, value)
+                    paragraph.style = self.style
 
-date = get_non_empty_input("Enter date (dd/mm/yyyy): ")
-company_name = get_non_empty_input("Enter company name: ")
-city = get_non_empty_input("Enter city: ")
-position_name = get_non_empty_input("Enter position name: ")
+        for paragraph in all_paragraphs:
+            print(paragraph.text)
 
-# Create dictionary based on user input - will replace placeholders in doc
-replacements = {
-    '{DATE}': date,
-    '{COMPANY}': company_name,
-    '{CITY}': city,
-    '{POSITION}': position_name
-}
+        self.document.save(f"{self.company}_Arianna_Foo_Resume.docx")
+    
+    def exportAs(document_type):
+        pass
 
-# Loop through dictionary and paragraphs to replace placeholders
-for key, value in replacements.items():
-    for paragraph in all_paragraphs:
-        if key in paragraph.text:
-            paragraph.text = paragraph.text.replace(key, value)
-            paragraph.style = style
-
-for paragraph in all_paragraphs:
-    print(paragraph.text)
-
-document.save(f"{company_name}_Arianna_Foo_Resume.docx")
 
 
 
@@ -69,6 +66,8 @@ document.save(f"{company_name}_Arianna_Foo_Resume.docx")
 
 """ TODO
 - option to save as pdf
+- choose where to save
+- create new folder to save??
 - save job to excel sheet
 
 def replace_placeholders(docx_path, replacements, output_path):
