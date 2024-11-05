@@ -193,10 +193,10 @@ class MainWindow(QMainWindow):
         new_page = QWidget()
         layout = QVBoxLayout()
 
-        label = QLabel("New Page - Replacement Complete")
-        layout.addWidget(label)
+        # Show message
 
-        back_button = QPushButton("Go Back")
+        # button
+        back_button = QPushButton("Start Over")
         back_button.setFixedSize(200, 30)
         back_button.clicked.connect(self.setup_ui) 
         back_button.setStyleSheet("""
@@ -213,7 +213,22 @@ class MainWindow(QMainWindow):
             }              
         """)
 
+        # preview
+        # Load and scale the image to fit the window size
+        image = QPixmap("output_previews/AriannaFoo_Resume_page1.jpg")
+        screen_size = self.size()  # Get the current window size
+        scaled_width = int(screen_size.width() * 0.85)
+        scaled_height = int(screen_size.height() * 0.85)
+        scaled_image = image.scaled(scaled_width, scaled_height, Qt.KeepAspectRatio, Qt.SmoothTransformation)
+
+        # Create QLabel to hold the scaled image
+        image_label = QLabel()
+        image_label.setPixmap(scaled_image)
+        image_label.setAlignment(Qt.AlignCenter)
+
         layout.addWidget(back_button, alignment=Qt.AlignCenter)
+        layout.addWidget(image_label, alignment=Qt.AlignCenter)
+        # layout.addWidget(back_button, alignment=Qt.AlignCenter)
 
         new_page.setLayout(layout)
         self.setCentralWidget(new_page)
@@ -225,12 +240,12 @@ class MainWindow(QMainWindow):
         path = labels.split('"/> ')[-1]
         
         if any(input.text() == "" for input in self.inputs) or (path == "No file selected."):
-            self.showMessageBox()
+            self.showEmptyMessage()
         else:
             self.get_user_values()
             self.create_preview_page()
 
-    def showMessageBox(self):
+    def showEmptyMessage(self):
         msg = QMessageBox() 
         msg.setIcon(QMessageBox.Information) 
   
@@ -245,6 +260,23 @@ class MainWindow(QMainWindow):
         
         # start the app 
         msg.exec_() 
+    
+    def showSavedMessage(self):
+        msg = QMessageBox() 
+        msg.setIcon(QMessageBox.Information) 
+  
+        # setting message for Message Box 
+        msg.setText("Cover letter fields replaced and saved successfully.") 
+        
+        # setting Message box window title 
+        msg.setWindowTitle("Success!") 
+        
+        # declaring buttons on Message Box 
+        msg.setStandardButtons(QMessageBox.Ok) 
+        
+        # start the app 
+        msg.exec_() 
+
 
     def get_user_values(self):
         """

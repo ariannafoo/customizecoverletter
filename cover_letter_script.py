@@ -54,6 +54,7 @@ class CoverLetter():
         for paragraph in all_paragraphs:
             print(paragraph.text)
 
+        # save as pdf
         self.document.save(f"{self.company}_Arianna_Foo_Resume.docx")
     
     def exportAs(document_type):
