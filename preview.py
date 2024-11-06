@@ -19,5 +19,5 @@ class Preview():
 
         # Save the first page as JPEG with high quality
 
-        output_file_path = os.path.join(output_path, '{self.company}_CL.jpg')
+        output_file_path = os.path.join(output_path, f'{self.company}_CL.jpg')
         images[0].save(output_file_path, 'JPEG', quality=100)  # Save as JPEG with maximum quality

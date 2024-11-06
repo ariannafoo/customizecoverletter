@@ -53,27 +53,21 @@ class CoverLetter():
                     paragraph.text = paragraph.text.replace(key, value)
                     paragraph.style = self.style
 
-        # TODO
-        for paragraph in all_paragraphs:
-            print(paragraph.text)
-
         # save as pdf
         file_path = os.path.join(self.destinaton, f"{self.company}_Arianna_Foo_CL.docx")
         self.document.save(file_path)
-        self.convert_docx_to_pdf("/Users/ariannafoo/Documents/Cover letter/SDSD_Arianna_Foo_CL.docx", self.destinaton)
+        print(f"Converting from: {file_path}")
+        print(f"Saving PDF to: {self.destinaton}")
+        self.convert_docx_to_pdf(file_path, self.destinaton)
         
     
     def convert_docx_to_pdf(self, docx_path, output_pdf_path):
-
-        print(f"Converting from: {docx_path}")
-        print(f"Saving PDF to: {output_pdf_path}")
-
         # Call LibreOffice to convert the document
-        subprocess.run(['libreoffice', '--headless', '--convert-to', 'pdf', docx_path, '--outdir', output_pdf_path])
+        subprocess.run(['/Applications/LibreOffice.app/Contents/MacOS/soffice', '--headless', '--convert-to', 'pdf', docx_path, '--outdir', output_pdf_path])
 
         # generate preview
-        # new_preview = Preview(file_path, self.company)
-        # new_preview.generate_preview()
+        new_preview = Preview(f"{output_pdf_path}/{self.company}_Arianna_Foo_CL.pdf", self.company)
+        new_preview.generate_preview()
 
     """ TODO
     - save job to excel sheet

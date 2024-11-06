@@ -44,6 +44,7 @@ class MainWindow(QMainWindow):
         # Declare variables
         self.inputs = []
         self._replacements = []
+        self.company = ""
 
         self.configure_window()
         self.setup_ui()          # First page with the form
@@ -248,7 +249,7 @@ class MainWindow(QMainWindow):
 
         # preview
         # Load and scale the image to fit the window size
-        image = QPixmap("output_previews/AriannaFoo_Resume_page1.jpg")
+        image = QPixmap(f"output_previews/{self.company}_CL.jpg")
         screen_size = self.size()  # Get the current window size
         scaled_width = int(screen_size.width() * 0.85)
         scaled_height = int(screen_size.height() * 0.85)
@@ -259,13 +260,10 @@ class MainWindow(QMainWindow):
         image_label.setPixmap(scaled_image)
         image_label.setAlignment(Qt.AlignCenter)
 
-        # Creating HBox layout for buttons
-        hbox = QVBoxLayout()
-        hbox.addWidget(back_button, alignment=Qt.AlignCenter)
-
         # Adding to Vbox layout
         layout.addWidget(image_label, alignment=Qt.AlignCenter)
-        layout.addChildLayout(hbox)
+        layout.addWidget(back_button, alignment=Qt.AlignCenter)
+
 
         new_page.setLayout(layout)
         self.setCentralWidget(new_page)
@@ -324,12 +322,12 @@ class MainWindow(QMainWindow):
         Generate cover letter preview based on user input.
         """
         path = self.inputs[3].text().split('"/> ')[-1]
-        company = self.inputs[1].text()
+        self.company = self.inputs[1].text()
         city = self.inputs[0].text()
         position = self.inputs[2].text()
         destination = self.destination_lbl.text()
 
-        new_cover_letter = CoverLetter(path, str(self.date), company, city, position, destination)
+        new_cover_letter = CoverLetter(path, str(self.date), self.company, city, position, destination)
         new_cover_letter.replacePlaceholders()
 
     def update_selected_date(self, date):
