@@ -1,7 +1,7 @@
 import sys
 from datetime import datetime
 import calendar
-import cover_letter_script
+from cover_letter_script import CoverLetter
 
 from PyQt5.QtCore import QSize, Qt, QDate
 from PyQt5.QtGui import *
@@ -87,12 +87,39 @@ class MainWindow(QMainWindow):
         self.inputs[0].setPlaceholderText("e.g. Vaughan"),
         self.inputs[1].setPlaceholderText("e.g. Airbnb Canada"),
         self.inputs[2].setPlaceholderText("e.g. Chat Support Rep"),
+
+        # Create "Select Directory" button
+        dest_button = QPushButton("Choose destination")
+        dest_button.setFixedSize(150, 30)
+        dest_button.clicked.connect(self.on_location_btn_clicked)
+        dest_button.setStyleSheet("""
+            
+            QPushButton{
+                background-color: #398cef; 
+                color: white;
+                border-radius: 10px;
+            }
+            
+            QPushButton:pressed {
+                background-color: #7bc8da;
+                color: white;
+            }              
+        """)
+
+        # Create label to display directory
+        self.destination_lbl = QLabel("")
+        self.destination_lbl.setStyleSheet("""
+                QLabel{
+                    background-color: white; 
+                    color: black; 
+                }
+        """)        
         
         # Create "Replace" button
-        self.button = QPushButton("Replace")
-        self.button.setFixedSize(200, 30)
-        self.button.clicked.connect(self.on_replace_btn_clicked)
-        self.button.setStyleSheet("""
+        button = QPushButton("Replace")
+        button.setFixedSize(200, 30)
+        button.clicked.connect(self.on_replace_btn_clicked)
+        button.setStyleSheet("""
             
             QPushButton{
                 background-color: #398cef; 
@@ -107,10 +134,10 @@ class MainWindow(QMainWindow):
         """)
 
         # Create form container widget to hold form
-        self.form_cont = QWidget()
-        self.form_cont.setObjectName("formContainer")
-        self.form_cont.setFixedHeight(600)
-        self.form_cont.setStyleSheet("""
+        form_cont = QWidget()
+        form_cont.setObjectName("formContainer")
+        form_cont.setFixedHeight(700)
+        form_cont.setStyleSheet("""
             #formContainer {
             background-color: white; 
             border-radius: 10px; 
@@ -119,8 +146,8 @@ class MainWindow(QMainWindow):
         """) 
 
         # Create vertical layout
-        self.v_layout = QVBoxLayout() 
-        self.v_layout.addStretch() # Add stretchable space at the top to push widgets downward
+        v_layout = QVBoxLayout() 
+        v_layout.addStretch() # Add stretchable space at the top to push widgets downward
 
         # Create calendar
         self.calendar = QCalendarWidget(self)
@@ -138,7 +165,7 @@ class MainWindow(QMainWindow):
         self.calendar.clicked.connect(self.update_selected_date)
 
         # Add calendar to layout
-        self.v_layout.addWidget(self.calendar, alignment=Qt.AlignCenter)
+        v_layout.addWidget(self.calendar, alignment=Qt.AlignCenter)
 
         # Add labels and inputs to the form container
         for label, input in zip(self.labels, self.inputs):
@@ -161,33 +188,39 @@ class MainWindow(QMainWindow):
             """)
 
             # Adding to widget vertical layout and center horizontally
-            self.v_layout.addWidget(label,)
-            self.v_layout.addWidget(input, alignment=Qt.AlignCenter)
+            v_layout.addWidget(label,)
+            v_layout.addWidget(input, alignment=Qt.AlignCenter)
 
-        self.v_layout.addItem(QSpacerItem(20, 25, QSizePolicy.Minimum, QSizePolicy.Expanding))
-        self.v_layout.addWidget(self.button, alignment=Qt.AlignCenter)
+        # HBox
+        h_layout = QHBoxLayout()
+        h_layout.addWidget(dest_button, alignment=Qt.AlignCenter)
+        h_layout.addWidget(self.destination_lbl, alignment=Qt.AlignCenter)
+
+        v_layout.addLayout(h_layout)
+        v_layout.addItem(QSpacerItem(20, 25, QSizePolicy.Minimum, QSizePolicy.Expanding))
+        v_layout.addWidget(button, alignment=Qt.AlignCenter)
 
         # Push widgets upward
-        self.v_layout.addStretch()
+        v_layout.addStretch()
 
         # Add v_layout to form container
-        self.form_cont.setLayout(self.v_layout)
+        form_cont.setLayout(v_layout)
 
         # Create a layout to center the form container
-        self.outer_layout = QVBoxLayout()
-        self.outer_layout.addStretch() # Add space at the top
+        outer_layout = QVBoxLayout()
+        outer_layout.addStretch() # Add space at the top
 
-        self.hbox = QHBoxLayout()
-        self.hbox.addStretch() # Add space to left
-        self.hbox.addWidget(self.form_cont) # Add inner container to center
-        self.hbox.addStretch() # Add space to right
+        hbox = QHBoxLayout()
+        hbox.addStretch() # Add space to left
+        hbox.addWidget(form_cont) # Add inner container to center
+        hbox.addStretch() # Add space to right
 
-        self.outer_layout.addLayout(self.hbox)
-        self.outer_layout.addStretch() # Add space at the buttom
+        outer_layout.addLayout(hbox)
+        outer_layout.addStretch() # Add space at the buttom
 
-        self.container = QWidget()
-        self.container.setLayout(self.outer_layout)
-        self.setCentralWidget(self.container)
+        container = QWidget()
+        container.setLayout(outer_layout)
+        self.setCentralWidget(container)
 
     def create_preview_page(self):
         new_page = QWidget()
@@ -195,7 +228,7 @@ class MainWindow(QMainWindow):
 
         # Show message
 
-        # button
+        # back button
         back_button = QPushButton("Start Over")
         back_button.setFixedSize(200, 30)
         back_button.clicked.connect(self.setup_ui) 
@@ -226,9 +259,13 @@ class MainWindow(QMainWindow):
         image_label.setPixmap(scaled_image)
         image_label.setAlignment(Qt.AlignCenter)
 
-        layout.addWidget(back_button, alignment=Qt.AlignCenter)
+        # Creating HBox layout for buttons
+        hbox = QVBoxLayout()
+        hbox.addWidget(back_button, alignment=Qt.AlignCenter)
+
+        # Adding to Vbox layout
         layout.addWidget(image_label, alignment=Qt.AlignCenter)
-        # layout.addWidget(back_button, alignment=Qt.AlignCenter)
+        layout.addChildLayout(hbox)
 
         new_page.setLayout(layout)
         self.setCentralWidget(new_page)
@@ -238,11 +275,12 @@ class MainWindow(QMainWindow):
          # need to parse input path because it includes html
         labels = self.inputs[3].text()
         path = labels.split('"/> ')[-1]
+        destination = self.destination_lbl.text()
         
-        if any(input.text() == "" for input in self.inputs) or (path == "No file selected."):
+        if any(input.text() == "" for input in self.inputs) or (path == "No file selected.") or (destination == ""):
             self.showEmptyMessage()
         else:
-            self.get_user_values()
+            self.generate_preview()
             self.create_preview_page()
 
     def showEmptyMessage(self):
@@ -261,6 +299,10 @@ class MainWindow(QMainWindow):
         # start the app 
         msg.exec_() 
     
+    def on_location_btn_clicked(self):
+        dest_dir = QFileDialog.getExistingDirectory(self, "Select Destination Folder", "/Users/ariannafoo/Documents")
+        self.destination_lbl.setText(dest_dir)
+    
     def showSavedMessage(self):
         msg = QMessageBox() 
         msg.setIcon(QMessageBox.Information) 
@@ -277,22 +319,23 @@ class MainWindow(QMainWindow):
         # start the app 
         msg.exec_() 
 
-
-    def get_user_values(self):
+    def generate_preview(self):
         """
-        Return user values from corresponding fields.
+        Generate cover letter preview based on user input.
         """
         path = self.inputs[3].text().split('"/> ')[-1]
         company = self.inputs[1].text()
         city = self.inputs[0].text()
         position = self.inputs[2].text()
+        destination = self.destination_lbl.text()
 
-       # new_cover_letter = cover_letter_script.CoverLetter(path, self.date, company, city, position)
-       # new_cover_letter.replacePlaceholders()
+        new_cover_letter = CoverLetter(path, str(self.date), company, city, position, destination)
+        new_cover_letter.replacePlaceholders()
 
     def update_selected_date(self, date):
         # The 'date' argument is automatically passed by the signal
         self.date = date.toString("MMMM d, yyyy")
+        print(self.destination_lbl.text() == "")
         
 def main():
     app = QApplication([])

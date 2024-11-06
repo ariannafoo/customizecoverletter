@@ -1,13 +1,14 @@
 # Used to open and manipulate word documents
 from docx import Document
 from docx.shared import Pt
-
-# document = Document("documents/Arianna_Foo_Cover_Letter.docx")
-# all_paragraphs = document.paragraphs
+from io import BytesIO
+from preview import Preview
+import os
+import subprocess
 
 class CoverLetter():
 
-    def __init__(self, document_path, date, company, city, position):
+    def __init__(self, document_path, date, company, city, position, destination):
 
         # User inputs
         self.document = Document(document_path)
@@ -15,6 +16,7 @@ class CoverLetter():
         self.company = company
         self.city = city
         self.position = position
+        self.destinaton = destination
 
         # Define style
         self.style = self.defineDocumentStyles()
@@ -51,29 +53,29 @@ class CoverLetter():
                     paragraph.text = paragraph.text.replace(key, value)
                     paragraph.style = self.style
 
+        # TODO
         for paragraph in all_paragraphs:
             print(paragraph.text)
 
         # save as pdf
-        self.document.save(f"{self.company}_Arianna_Foo_Resume.docx")
+        file_path = os.path.join(self.destinaton, f"{self.company}_Arianna_Foo_CL.docx")
+        self.document.save(file_path)
+        self.convert_docx_to_pdf("/Users/ariannafoo/Documents/Cover letter/SDSD_Arianna_Foo_CL.docx", self.destinaton)
+        
     
-    def exportAs(document_type):
-        pass
+    def convert_docx_to_pdf(self, docx_path, output_pdf_path):
 
+        print(f"Converting from: {docx_path}")
+        print(f"Saving PDF to: {output_pdf_path}")
 
+        # Call LibreOffice to convert the document
+        subprocess.run(['libreoffice', '--headless', '--convert-to', 'pdf', docx_path, '--outdir', output_pdf_path])
 
+        # generate preview
+        # new_preview = Preview(file_path, self.company)
+        # new_preview.generate_preview()
 
-
-
-
-""" TODO
-- option to save as pdf
-- choose where to save
-- create new folder to save??
-- save job to excel sheet
-- better way to open folder label
-
-def replace_placeholders(docx_path, replacements, output_path):
-
-    Replace placeholders in the Word document with corresponding values from replacements.
-"""
+    """ TODO
+    - save job to excel sheet
+    - better way to open folder label
+    """
