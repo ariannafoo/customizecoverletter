@@ -32,7 +32,7 @@ class Label(QLabel):
         self.setCursor(Qt.PointingHandCursor)
 
         # getOpenFileName returns a tuple
-        fname, _ = QFileDialog.getOpenFileName(self, "Open File", "/Users/ariannafoo/Documents", "Word (*.docx)")
+        fname, _ = QFileDialog.getOpenFileName(self, "Open File", "/Users/ariannafoo/Documents/Cover letter", "Word (*.docx)")
         
         self.setText(self.create_html(fname)) if fname else None
 
@@ -45,6 +45,7 @@ class MainWindow(QMainWindow):
         self.inputs = []
         self._replacements = []
         self.company = ""
+        self.date_str = ""
 
         self.configure_window()
         self.setup_ui()          # First page with the form
@@ -161,6 +162,7 @@ class MainWindow(QMainWindow):
 
         # Setting up date variable
         self.date = today
+        self.date_str = today.toString("MMMM d, yyyy") 
 
         # Getting date
         self.calendar.clicked.connect(self.update_selected_date)
@@ -251,8 +253,8 @@ class MainWindow(QMainWindow):
         # Load and scale the image to fit the window size
         image = QPixmap(f"output_previews/{self.company}_CL.jpg")
         screen_size = self.size()  # Get the current window size
-        scaled_width = int(screen_size.width() * 0.85)
-        scaled_height = int(screen_size.height() * 0.85)
+        scaled_width = int(screen_size.width() * 0.95)
+        scaled_height = int(screen_size.height() * 0.95)
         scaled_image = image.scaled(scaled_width, scaled_height, Qt.KeepAspectRatio, Qt.SmoothTransformation)
 
         # Create QLabel to hold the scaled image
@@ -298,7 +300,7 @@ class MainWindow(QMainWindow):
         msg.exec_() 
     
     def on_location_btn_clicked(self):
-        dest_dir = QFileDialog.getExistingDirectory(self, "Select Destination Folder", "/Users/ariannafoo/Documents")
+        dest_dir = QFileDialog.getExistingDirectory(self, "Select Destination Folder", "/Users/ariannafoo/Documents/Cover letter")
         self.destination_lbl.setText(dest_dir)
     
     def showSavedMessage(self):
@@ -327,13 +329,18 @@ class MainWindow(QMainWindow):
         position = self.inputs[2].text()
         destination = self.destination_lbl.text()
 
-        new_cover_letter = CoverLetter(path, str(self.date), self.company, city, position, destination)
+        if self.company.endswith('s'):
+            s = "'"
+        else:
+            s = "'s"
+
+        new_cover_letter = CoverLetter(path, self.date_str, self.company, city, position, s, destination)
         new_cover_letter.replacePlaceholders()
 
     def update_selected_date(self, date):
         # The 'date' argument is automatically passed by the signal
-        self.date = date.toString("MMMM d, yyyy")
-        print(self.destination_lbl.text() == "")
+        self.date = date
+        self.date_str = date.toString("MMMM d, yyyy") 
         
 def main():
     app = QApplication([])

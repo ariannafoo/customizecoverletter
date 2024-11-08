@@ -1,6 +1,6 @@
 # Used to open and manipulate word documents
 from docx import Document
-from docx.shared import Pt
+from docx.shared import Pt, RGBColor
 from io import BytesIO
 from preview import Preview
 import os
@@ -8,7 +8,7 @@ import subprocess
 
 class CoverLetter():
 
-    def __init__(self, document_path, date, company, city, position, destination):
+    def __init__(self, document_path, date, company, city, position, s, destination):
 
         # User inputs
         self.document = Document(document_path)
@@ -16,29 +16,37 @@ class CoverLetter():
         self.company = company
         self.city = city
         self.position = position
+        self.s = s
         self.destinaton = destination
 
         # Define style
-        self.style = self.defineDocumentStyles()
+        self.defineDocumentStyles()
 
         # Create dictionary based on user input - will replace placeholders in doc
         self.replacements = {
             '{DATE}': self.date,
             '{COMPANY}': self.company,
             '{CITY}': self.city,
-            '{POSITION}': self.position
+            '{C_POSITION}': self.position,
+            '{POSITION}': self.position,
+            '{S}': self.s
         }
 
     def defineDocumentStyles(self):
         """
         Define the document styles for the cover letter.
         """
-        style = self.document.styles['Normal']
-        font = style.font
-        font.name = 'Calibri'
-        font.size = Pt(11)
+        self.reg_style = self.document.styles['CL_Normal']
+        font_1 = self.reg_style.font
+        font_1.name = 'Calibri'
+        font_1.size = Pt(11)
 
-        return style
+        self.coloured_style = self.document.styles['Coloured']
+        font_2 = self.coloured_style.font
+        font_2.name = 'Calibri'
+        font_2.size = Pt(11)
+        font_2.color.rgb = RGBColor(74, 134, 232)
+        font_2.bold = True
     
     # TODO: edit colour and font in one placeholder
     def replacePlaceholders(self):
@@ -50,11 +58,17 @@ class CoverLetter():
         for key, value in self.replacements.items():
             for paragraph in all_paragraphs:
                 if key in paragraph.text:
-                    paragraph.text = paragraph.text.replace(key, value)
-                    paragraph.style = self.style
+                    if key == "{C_POSITION}":
+                        print(f"{key}")
+                        paragraph.text = paragraph.text.replace(key, value)
+                        paragraph.style = self.coloured_style
+                    else:
+                        print(f"{key}")
+                        paragraph.text = paragraph.text.replace(key, value)
+                        paragraph.style = self.reg_style
 
         # save as pdf
-        file_path = os.path.join(self.destinaton, f"{self.company}_Arianna_Foo_CL.docx")
+        file_path = os.path.join(self.destinaton, f"{self.company}_AriannaFoo_CL.docx")
         self.document.save(file_path)
         print(f"Converting from: {file_path}")
         print(f"Saving PDF to: {self.destinaton}")
@@ -66,7 +80,7 @@ class CoverLetter():
         subprocess.run(['/Applications/LibreOffice.app/Contents/MacOS/soffice', '--headless', '--convert-to', 'pdf', docx_path, '--outdir', output_pdf_path])
 
         # generate preview
-        new_preview = Preview(f"{output_pdf_path}/{self.company}_Arianna_Foo_CL.pdf", self.company)
+        new_preview = Preview(f"{output_pdf_path}/{self.company}_AriannaFoo_CL.pdf", self.company)
         new_preview.generate_preview()
 
     """ TODO
