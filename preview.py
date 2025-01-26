@@ -14,7 +14,7 @@ class Preview():
         os.makedirs(output_path, exist_ok=True)
 
         # Convert PDF to images with high DPI for maximum quality
-        dpi = 1200  # Adjust DPI for better quality
+        dpi = 1000  # Adjust DPI for better quality
         images = convert_from_path(self.file_path, dpi=dpi)
 
         # Save the first page as JPEG with high quality

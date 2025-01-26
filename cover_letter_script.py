@@ -68,7 +68,7 @@ class CoverLetter():
                         paragraph.style = self.reg_style
 
         # save as pdf
-        file_path = os.path.join(self.destinaton, f"{self.company}_AriannaFoo_CL.docx")
+        file_path = os.path.join(self.destinaton, f"{self.company}_Arianna_Foo_Cover_Letter.docx")
         self.document.save(file_path)
         print(f"Converting from: {file_path}")
         print(f"Saving PDF to: {self.destinaton}")
