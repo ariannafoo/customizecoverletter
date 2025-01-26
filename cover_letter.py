@@ -1,4 +1,5 @@
 import sys
+import os
 from datetime import datetime
 import calendar
 from cover_letter_script import CoverLetter
@@ -63,7 +64,7 @@ class MainWindow(QWidget):
         top_nav_layout.setContentsMargins(15, 10, 15, 10)
 
         title = QLabel("Cover Letter Customizer")
-        title.setStyleSheet("color: white; font-family: Noto Sans, sans-serif; font-size: 18px; font-weight: bold;")
+        title.setStyleSheet("color: white; font-size: 18px; font-weight: bold;")
         title.setAlignment(Qt.AlignLeft)
 
         # Add items to the top navigation bar
@@ -99,7 +100,6 @@ class MainWindow(QWidget):
                 QLabel {{
                     color: {'#f8faff' if i <= 3 else 'lightgray'};
                     font-size: 14px;
-                    font-family: Noto Sans, sans-serif;
                     font-weight: {'bold' if i == 3 else 'normal'};
                 }}
             """)
@@ -117,7 +117,7 @@ class MainWindow(QWidget):
 
         # Form Header
         header = QLabel("Position Details")
-        header.setStyleSheet("color: #398cef; font-size: 18px; font-weight: bold; font-family: Noto Sans, sans-serif;")
+        header.setStyleSheet("color: #398cef; font-size: 18px; font-weight: bold; sans-serif;")
         form_layout.addWidget(header)
 
         # Form Fields
@@ -135,7 +135,7 @@ class MainWindow(QWidget):
 
         for i, (label_text, field, placeholder) in enumerate(fields):
             label = QLabel(label_text)
-            label.setStyleSheet("color: black; font-size: 14px; font-family: Noto Sans, sans-serif;")
+            label.setStyleSheet("color: black; font-size: 14px; sans-serif;")
             grid_layout.addWidget(label, i, 0)
 
             field.setPlaceholderText(placeholder)
@@ -154,8 +154,8 @@ class MainWindow(QWidget):
         file_label.setStyleSheet("color: black; font-size: 14px;")
         grid_layout.addWidget(file_label, len(fields) + 1, 0)
 
-        file_upload_button = QPushButton("Upload Files")
-        file_upload_button.setStyleSheet("""
+        self.file_upload_button = QPushButton("Upload Files")
+        self.file_upload_button.setStyleSheet("""
             QPushButton {
                 border: 2px dashed #398cef;
                 border-radius: 5px;
@@ -168,8 +168,8 @@ class MainWindow(QWidget):
                 background-color: #e6f0ff;
             }
         """)
-        file_upload_button.clicked.connect(self.open_file_dialog)
-        grid_layout.addWidget(file_upload_button, len(fields) + 1, 1)
+        self.file_upload_button.clicked.connect(self.open_file_dialog)
+        grid_layout.addWidget(self.file_upload_button, len(fields) + 1, 1)
 
         form_layout.addLayout(grid_layout)
 
@@ -202,9 +202,14 @@ class MainWindow(QWidget):
         main_layout.addLayout(content_layout)
 
     def open_file_dialog(self):
-        file_path, _ = QFileDialog.getOpenFileName(self, "Select File", "", "All Files (*)")
+        file_path, _ = QFileDialog.getOpenFileName(self, "Select File", "", "Word (*.docx)")
+        print(file_path)
+
         if file_path:
-            print(f"File selected: {file_path}")
+            # Extract file name
+            file_name = os.path.basename(file_path)
+            print(file_name)
+            self.file_upload_button.setText(file_name)
 
       
         '''
