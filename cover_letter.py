@@ -32,7 +32,7 @@ class Label(QLabel):
         self.setCursor(Qt.PointingHandCursor)
 
         # getOpenFileName returns a tuple
-        fname, _ = QFileDialog.getOpenFileName(self, "Open File", "/Users/ariannafoo/Documents/Cover letter", "Word (*.docx)")
+        fname, _ = QFileDialog.getOpenFileName(self, "Open File", "/Users/ariannafoo/Documents/RESUME_COVER_LETTER", "Word (*.docx)")
         
         self.setText(self.create_html(fname)) if fname else None
 

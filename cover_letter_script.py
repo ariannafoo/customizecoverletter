@@ -59,19 +59,19 @@ class CoverLetter():
             for paragraph in all_paragraphs:
                 if key in paragraph.text:
                     if key == "{C_POSITION}":
-                        print(f"{key}")
                         paragraph.text = paragraph.text.replace(key, value)
                         paragraph.style = self.coloured_style
                     else:
-                        print(f"{key}")
                         paragraph.text = paragraph.text.replace(key, value)
                         paragraph.style = self.reg_style
 
         # save as pdf
         file_path = os.path.join(self.destinaton, f"{self.company}_Arianna_Foo_Cover_Letter.docx")
         self.document.save(file_path)
+        print("--------------------------------------------------------------\n")
         print(f"Converting from: {file_path}")
         print(f"Saving PDF to: {self.destinaton}")
+        print("--------------------------------------------------------------\n")
         self.convert_docx_to_pdf(file_path, self.destinaton)
         
     
@@ -80,8 +80,19 @@ class CoverLetter():
         subprocess.run(['/Applications/LibreOffice.app/Contents/MacOS/soffice', '--headless', '--convert-to', 'pdf', docx_path, '--outdir', output_pdf_path])
 
         # generate preview
-        new_preview = Preview(f"{output_pdf_path}/{self.company}_AriannaFoo_CL.pdf", self.company)
-        new_preview.generate_preview()
+        pdf_file_path = f"{output_pdf_path}/{self.company}_Arianna_Foo_Cover_Letter.pdf"
+
+        # new_preview = Preview(f"{output_pdf_path}/{self.company}_AriannaFoo_CL.pdf", self.company)
+    
+        
+        if os.path.exists(pdf_file_path):
+            print("---PATH EXISTS---")
+            new_preview = Preview(pdf_file_path, self.company)
+            new_preview.generate_preview()
+        else:
+            print(f"Error: PDF file not found at {pdf_file_path}")
+        
+        # new_preview.generate_preview()
 
     """ TODO
     - save job to excel sheet

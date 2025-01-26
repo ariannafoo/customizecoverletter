@@ -15,9 +15,11 @@ class Preview():
 
         # Convert PDF to images with high DPI for maximum quality
         dpi = 1000  # Adjust DPI for better quality
+        print("--------------------------------------------------------------\n")
+        print(self.file_path)
         images = convert_from_path(self.file_path, dpi=dpi)
+        print("--------------------------------------------------------------\n")
 
         # Save the first page as JPEG with high quality
-
         output_file_path = os.path.join(output_path, f'{self.company}_CL.jpg')
         images[0].save(output_file_path, 'JPEG', quality=100)  # Save as JPEG with maximum quality
