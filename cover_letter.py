@@ -36,7 +36,7 @@ class Label(QLabel):
         
         self.setText(self.create_html(fname)) if fname else None
 
-class MainWindow(QMainWindow):
+class MainWindow(QWidget):
 
     def __init__(self): 
         super().__init__()
@@ -47,30 +47,167 @@ class MainWindow(QMainWindow):
         self.company = ""
         self.date_str = ""
 
-        self.configure_window()
-        self.setup_ui()          # First page with the form
-    
-    def configure_window(self):
-        """
-        Set up window properties: title, size and style.
-        """
         self.setWindowTitle("Cover Letter Customizer")
-        
-        self.setStyleSheet("""
-            QMainWindow {
-                background-image: url('images/background.png'); 
-                background-repeat: no-repeat; 
-                background-position: center;
-            }
-        """)
-
-        self.setFixedSize(QSize(800, 800))
+        self.setFixedSize(900, 600)
+        self.setup_ui()
     
     def setup_ui(self):
         """
         Setup the UI elements of the window.
         """
+        main_layout = QVBoxLayout(self)
 
+        # Top Navigation Bar
+        top_nav_layout = QHBoxLayout()
+        top_nav_layout.setSpacing(20)
+        top_nav_layout.setContentsMargins(15, 10, 15, 10)
+
+        title = QLabel("Cover Letter Customizer")
+        title.setStyleSheet("color: white; font-family: Noto Sans, sans-serif; font-size: 18px; font-weight: bold;")
+        title.setAlignment(Qt.AlignLeft)
+
+        # Add items to the top navigation bar
+        top_nav_layout.addWidget(title, alignment=Qt.AlignLeft)
+        top_nav_layout.addStretch()
+    
+        top_nav_container = QFrame()
+        top_nav_container.setLayout(top_nav_layout)
+        top_nav_container.setStyleSheet("background-color: #398cef;")
+        top_nav_container.setFixedHeight(50)
+        main_layout.addWidget(top_nav_container)
+
+        # Main Content Layout (Side Navigation and Form)
+        content_layout = QHBoxLayout()
+
+        # Side Navigation
+        side_nav_layout = QVBoxLayout()
+        side_nav_layout.setSpacing(20)
+
+        steps = [
+            "Step One\nEnter position details",
+            "Step Two\nPreview letter",
+            "Step Three\nSave",
+            "Step Four\nN/A",
+            "Step Five\nN/A",
+            "Step Six\nN/A"
+        ]
+        # TODO: Fix hightlighting
+        for i, step in enumerate(steps, start=1):
+            step_label = QLabel(step)
+            step_label.setAlignment(Qt.AlignLeft)
+            step_label.setStyleSheet(f"""
+                QLabel {{
+                    color: {'#f8faff' if i <= 3 else 'lightgray'};
+                    font-size: 14px;
+                    font-family: Noto Sans, sans-serif;
+                    font-weight: {'bold' if i == 3 else 'normal'};
+                }}
+            """)
+            side_nav_layout.addWidget(step_label)
+
+        # Add navigation to the left of the main layout
+        side_nav_container = QWidget()
+        side_nav_container.setLayout(side_nav_layout)
+        side_nav_container.setFixedWidth(200)
+        content_layout.addWidget(side_nav_container)
+
+        # Form Area
+        form_layout = QVBoxLayout()
+        form_layout.setSpacing(20)
+
+        # Form Header
+        header = QLabel("Position Details")
+        header.setStyleSheet("color: #398cef; font-size: 18px; font-weight: bold; font-family: Noto Sans, sans-serif;")
+        form_layout.addWidget(header)
+
+        # Form Fields
+        grid_layout = QGridLayout()
+        grid_layout.setHorizontalSpacing(20)
+        grid_layout.setVerticalSpacing(15)
+
+        # Labels and inputs
+        fields = [
+            ("City", QLineEdit(), "e.g. Vaughan"),
+            ("Company", QLineEdit(), "e.g. Aviva Insurance"),
+            ("Position", QLineEdit(), "e.g. Chat Support Rep"),
+            ("Save to", QLineEdit(), "/.../some/file/path/"),
+        ]
+
+        for i, (label_text, field, placeholder) in enumerate(fields):
+            label = QLabel(label_text)
+            label.setStyleSheet("color: black; font-size: 14px; font-family: Noto Sans, sans-serif;")
+            grid_layout.addWidget(label, i, 0)
+
+            field.setPlaceholderText(placeholder)
+            field.setStyleSheet("""
+                QLineEdit {
+                    color: black;
+                    border: 1px solid lightgray;
+                    border-radius: 5px;
+                    padding: 5px;
+                }
+            """)
+            grid_layout.addWidget(field, i, 1)
+
+        # File Upload
+        file_label = QLabel("File")
+        file_label.setStyleSheet("color: black; font-size: 14px;")
+        grid_layout.addWidget(file_label, len(fields) + 1, 0)
+
+        file_upload_button = QPushButton("Upload Files")
+        file_upload_button.setStyleSheet("""
+            QPushButton {
+                border: 2px dashed #398cef;
+                border-radius: 5px;
+                padding: 10px;
+                font-size: 14px;
+                color: #398cef;
+                background-color: #f8faff;
+            }
+            QPushButton:hover {
+                background-color: #e6f0ff;
+            }
+        """)
+        file_upload_button.clicked.connect(self.open_file_dialog)
+        grid_layout.addWidget(file_upload_button, len(fields) + 1, 1)
+
+        form_layout.addLayout(grid_layout)
+
+        # Save & Preview Button
+        save_preview_button = QPushButton("Save & Preview")
+        save_preview_button.setFixedHeight(40)
+        save_preview_button.setFixedWidth(130)
+        save_preview_button.clicked.connect(self.on_save_btn_clicked)
+        save_preview_button.setStyleSheet("""
+            QPushButton {
+                background-color: #398cef;
+                color: white;
+                font-size: 16px;
+                font-weight: bold;
+                border-radius: 5px;
+            }
+            QPushButton:hover {
+                background-color: #296cc0;
+            }
+        """)
+        form_layout.addWidget(save_preview_button, alignment=Qt.AlignRight)
+
+        # Add form to the main layout
+        form_container = QFrame()
+        form_container.setLayout(form_layout)
+        form_container.setStyleSheet("background-color: white; border-radius: 10px;")
+        content_layout.addWidget(form_container, stretch=1)
+
+        # Add content to the main layout
+        main_layout.addLayout(content_layout)
+
+    def open_file_dialog(self):
+        file_path, _ = QFileDialog.getOpenFileName(self, "Select File", "", "All Files (*)")
+        if file_path:
+            print(f"File selected: {file_path}")
+
+      
+        '''
         # Create label
         self.labels = [
             QLabel("Enter city name"),
@@ -151,49 +288,6 @@ class MainWindow(QMainWindow):
         v_layout = QVBoxLayout() 
         v_layout.addStretch() # Add stretchable space at the top to push widgets downward
 
-        # Create calendar
-        self.calendar = QCalendarWidget(self)
-        self.calendar.setGridVisible(True)
-
-        # Setting date range
-        today = QDate.currentDate()
-        self.calendar.setMinimumDate(today.addDays(-7))
-        self.calendar.setMaximumDate(today.addDays(+7))
-
-        # Setting up date variable
-        self.date = today
-        self.date_str = today.toString("MMMM d, yyyy") 
-
-        # Getting date
-        self.calendar.clicked.connect(self.update_selected_date)
-
-        # Add calendar to layout
-        v_layout.addWidget(self.calendar, alignment=Qt.AlignCenter)
-
-        # Add labels and inputs to the form container
-        for label, input in zip(self.labels, self.inputs):
-
-            # Setting size
-            label.setFixedSize(150, 30)
-            label.setStyleSheet("background-color: transparent; color: black")
-            input.setFixedSize(300, 30)
-            input.setStyleSheet("""
-                QLineEdit, Label{
-                    background-color: white; 
-                    color: black; 
-                    border: 1px solid lightgray; 
-                    border-radius: 10px;
-                }
-                
-                QLineEdit:focus {
-                    border: 1px solid blue;
-                }
-            """)
-
-            # Adding to widget vertical layout and center horizontally
-            v_layout.addWidget(label,)
-            v_layout.addWidget(input, alignment=Qt.AlignCenter)
-
         # HBox
         h_layout = QHBoxLayout()
         h_layout.addWidget(dest_button, alignment=Qt.AlignCenter)
@@ -224,6 +318,7 @@ class MainWindow(QMainWindow):
         container = QWidget()
         container.setLayout(outer_layout)
         self.setCentralWidget(container)
+        '''
 
     def create_preview_page(self):
         new_page = QWidget()
@@ -270,7 +365,7 @@ class MainWindow(QMainWindow):
         new_page.setLayout(layout)
         self.setCentralWidget(new_page)
 
-    def on_replace_btn_clicked(self):
+    def on_save_btn_clicked(self):
 
          # need to parse input path because it includes html
         labels = self.inputs[3].text()
