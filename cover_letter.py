@@ -1,455 +1,101 @@
-import sys
+# Used to open and manipulate word documents
+from docx import Document
+from datetime import date
+from docx.shared import Pt, RGBColor
+from io import BytesIO
+from preview import Preview
 import os
-from datetime import datetime
-import calendar
-from cover_letter_script import CoverLetter
+import subprocess
 
-from PyQt5.QtCore import QSize, Qt, QDate
-from PyQt5.QtGui import *
-from PyQt5.QtWidgets import *
+class CoverLetter():
 
-# QLabel Class
-class Label(QLabel):
+    def __init__(self, company, city, position, s, document_path, destination):
 
-    """
-    This class represents a clickable icon and label side by side. 
-    """
-            
-    # simpler way to do this??
-    def __init__(self, parent=None):
-        super(Label, self).__init__(parent)
+        # User inputs
+        self.date = date.today().strftime("%B %d, %Y")
+        self.company = company
+        self.city = city
+        self.position = position
+        self.s = s
+        self.document = Document(document_path)
+        self.destinaton = destination
+       
+        # Define style
+        self.defineDocumentStyles()
 
-        self.icon_path = 'images/blue_file.jpeg'  # Path to your icon
-        self.setAlignment(Qt.AlignVCenter)
-        self.setText(self.create_html("No file selected."))
+        # Create dictionary based on user input - will replace placeholders in doc
+        self.replacements = {
+            '{DATE}': self.date,
+            '{COMPANY}': self.company,
+            '{CITY}': self.city,
+            '{C_POSITION}': self.position,
+            '{POSITION}': self.position,
+            '{S}': self.s
+        }
 
-     # Create HTML for the label
-    def create_html(self, text):
-        return f'<img src="{self.icon_path}" width="20" height="15" style="vertical-align: middle;"/> {text}'
-
-    # On mouse click open file directory
-    def mousePressEvent(self, event):
-
-        self.setCursor(Qt.PointingHandCursor)
-
-        # getOpenFileName returns a tuple
-        fname, _ = QFileDialog.getOpenFileName(self, "Open File", "/Users/ariannafoo/Documents/RESUME_COVER_LETTER", "Word (*.docx)")
-        
-        self.setText(self.create_html(fname)) if fname else None
-
-class MainWindow(QWidget):
-
-    def __init__(self): 
-        super().__init__()
-
-        # Declare variables
-        self.inputs = []
-        self._replacements = []
-        self.company = ""
-        self.date_str = ""
-
-        self.setWindowTitle("Cover Letter Customizer")
-        self.setFixedSize(900, 600)
-        self.setup_ui()
-    
-    def setup_ui(self):
+    def defineDocumentStyles(self):
         """
-        Setup the UI elements of the window.
+        Define the document styles for the cover letter.
         """
-        main_layout = QVBoxLayout(self)
+        self.reg_style = self.document.styles['CL_Normal']
+        font_1 = self.reg_style.font
+        font_1.name = 'Calibri'
+        font_1.size = Pt(11)
 
-        # Top Navigation Bar
-        top_nav_layout = QHBoxLayout()
-        top_nav_layout.setSpacing(20)
-        top_nav_layout.setContentsMargins(15, 10, 15, 10)
-
-        title = QLabel("Cover Letter Customizer")
-        title.setStyleSheet("color: white; font-size: 18px; font-weight: bold;")
-        title.setAlignment(Qt.AlignLeft)
-
-        # Add items to the top navigation bar
-        top_nav_layout.addWidget(title, alignment=Qt.AlignLeft)
-        top_nav_layout.addStretch()
+        self.coloured_style = self.document.styles['Coloured']
+        font_2 = self.coloured_style.font
+        font_2.name = 'Calibri'
+        font_2.size = Pt(11)
+        font_2.color.rgb = RGBColor(74, 134, 232)
+        font_2.bold = True
     
-        top_nav_container = QFrame()
-        top_nav_container.setLayout(top_nav_layout)
-        top_nav_container.setStyleSheet("background-color: #398cef;")
-        top_nav_container.setFixedHeight(50)
-        main_layout.addWidget(top_nav_container)
+    # TODO: edit colour and font in one placeholder
+    def replacePlaceholders(self):
+        """
+        Replace placeholders in the cover letter and save new cover letter.
+        """
+        all_paragraphs = self.document.paragraphs
 
-        # Main Content Layout (Side Navigation and Form)
-        content_layout = QHBoxLayout()
+        for key, value in self.replacements.items():
+            for paragraph in all_paragraphs:
+                if key in paragraph.text:
+                    if key == "{C_POSITION}":
+                        paragraph.text = paragraph.text.replace(key, value)
+                        paragraph.style = self.coloured_style
+                    else:
+                        paragraph.text = paragraph.text.replace(key, value)
+                        paragraph.style = self.reg_style
 
-        # Side Navigation
-        side_nav_layout = QVBoxLayout()
-        side_nav_layout.setSpacing(20)
-
-        steps = [
-            "Step One\nEnter position details",
-            "Step Two\nPreview letter",
-            "Step Three\nSave",
-            "Step Four\nN/A",
-            "Step Five\nN/A",
-            "Step Six\nN/A"
-        ]
-        # TODO: Fix hightlighting
-        for i, step in enumerate(steps, start=1):
-            step_label = QLabel(step)
-            step_label.setAlignment(Qt.AlignLeft)
-            step_label.setStyleSheet(f"""
-                QLabel {{
-                    color: {'#f8faff' if i <= 3 else 'lightgray'};
-                    font-size: 14px;
-                    font-weight: {'bold' if i == 3 else 'normal'};
-                }}
-            """)
-            side_nav_layout.addWidget(step_label)
-
-        # Add navigation to the left of the main layout
-        side_nav_container = QWidget()
-        side_nav_container.setLayout(side_nav_layout)
-        side_nav_container.setFixedWidth(200)
-        content_layout.addWidget(side_nav_container)
-
-        # Form Area
-        form_layout = QVBoxLayout()
-        form_layout.setSpacing(20)
-
-        # Form Header
-        header = QLabel("Position Details")
-        header.setStyleSheet("color: #398cef; font-size: 18px; font-weight: bold; sans-serif;")
-        form_layout.addWidget(header)
-
-        # Form Fields
-        grid_layout = QGridLayout()
-        grid_layout.setHorizontalSpacing(20)
-        grid_layout.setVerticalSpacing(15)
-
-        # Labels and inputs
-        fields = [
-            ("City", QLineEdit(), "e.g. Vaughan"),
-            ("Company", QLineEdit(), "e.g. Aviva Insurance"),
-            ("Position", QLineEdit(), "e.g. Chat Support Rep"),
-            ("Save to", QLineEdit(), "/.../some/file/path/"),
-        ]
-
-        for i, (label_text, field, placeholder) in enumerate(fields):
-            label = QLabel(label_text)
-            label.setStyleSheet("color: black; font-size: 14px; sans-serif;")
-            grid_layout.addWidget(label, i, 0)
-
-            field.setPlaceholderText(placeholder)
-            field.setStyleSheet("""
-                QLineEdit {
-                    color: black;
-                    border: 1px solid lightgray;
-                    border-radius: 5px;
-                    padding: 5px;
-                }
-            """)
-            grid_layout.addWidget(field, i, 1)
-
-        # File Upload
-        file_label = QLabel("File")
-        file_label.setStyleSheet("color: black; font-size: 14px;")
-        grid_layout.addWidget(file_label, len(fields) + 1, 0)
-
-        self.file_upload_button = QPushButton("Upload Files")
-        self.file_upload_button.setStyleSheet("""
-            QPushButton {
-                border: 2px dashed #398cef;
-                border-radius: 5px;
-                padding: 10px;
-                font-size: 14px;
-                color: #398cef;
-                background-color: #f8faff;
-            }
-            QPushButton:hover {
-                background-color: #e6f0ff;
-            }
-        """)
-        self.file_upload_button.clicked.connect(self.open_file_dialog)
-        grid_layout.addWidget(self.file_upload_button, len(fields) + 1, 1)
-
-        form_layout.addLayout(grid_layout)
-
-        # Save & Preview Button
-        save_preview_button = QPushButton("Save & Preview")
-        save_preview_button.setFixedHeight(40)
-        save_preview_button.setFixedWidth(130)
-        save_preview_button.clicked.connect(self.on_save_btn_clicked)
-        save_preview_button.setStyleSheet("""
-            QPushButton {
-                background-color: #398cef;
-                color: white;
-                font-size: 16px;
-                font-weight: bold;
-                border-radius: 5px;
-            }
-            QPushButton:hover {
-                background-color: #296cc0;
-            }
-        """)
-        form_layout.addWidget(save_preview_button, alignment=Qt.AlignRight)
-
-        # Add form to the main layout
-        form_container = QFrame()
-        form_container.setLayout(form_layout)
-        form_container.setStyleSheet("background-color: white; border-radius: 10px;")
-        content_layout.addWidget(form_container, stretch=1)
-
-        # Add content to the main layout
-        main_layout.addLayout(content_layout)
-
-    def open_file_dialog(self):
-        file_path, _ = QFileDialog.getOpenFileName(self, "Select File", "", "Word (*.docx)")
-        print(file_path)
-
-        if file_path:
-            # Extract file name
-            file_name = os.path.basename(file_path)
-            print(file_name)
-            self.file_upload_button.setText(file_name)
-
-      
-        '''
-        # Create label
-        self.labels = [
-            QLabel("Enter city name"),
-            QLabel("Enter company name"),
-            QLabel("Enter position title"),
-            QLabel("Select File"),
-        ]
-        # Create inputs
-        self.inputs = [
-            QLineEdit(),
-            QLineEdit(),
-            QLineEdit(),
-            Label()
-        ]
-        # Setting input placeholders
-        self.inputs[0].setPlaceholderText("e.g. Vaughan"),
-        self.inputs[1].setPlaceholderText("e.g. Airbnb Canada"),
-        self.inputs[2].setPlaceholderText("e.g. Chat Support Rep"),
-
-        # Create "Select Directory" button
-        dest_button = QPushButton("Choose destination")
-        dest_button.setFixedSize(150, 30)
-        dest_button.clicked.connect(self.on_location_btn_clicked)
-        dest_button.setStyleSheet("""
-            
-            QPushButton{
-                background-color: #398cef; 
-                color: white;
-                border-radius: 10px;
-            }
-            
-            QPushButton:pressed {
-                background-color: #7bc8da;
-                color: white;
-            }              
-        """)
-
-        # Create label to display directory
-        self.destination_lbl = QLabel("")
-        self.destination_lbl.setStyleSheet("""
-                QLabel{
-                    background-color: white; 
-                    color: black; 
-                }
-        """)        
+        # save as pdf
+        file_path = os.path.join(self.destinaton, f"{self.company}_Arianna_Foo_Cover_Letter.docx")
+        self.document.save(file_path)
+        print("--------------------------------------------------------------\n")
+        print(f"Converting from: {file_path}")
+        print(f"Saving PDF to: {self.destinaton}")
+        print("--------------------------------------------------------------\n")
+        self.convert_docx_to_pdf(file_path, self.destinaton)
         
-        # Create "Replace" button
-        button = QPushButton("Replace")
-        button.setFixedSize(200, 30)
-        button.clicked.connect(self.on_replace_btn_clicked)
-        button.setStyleSheet("""
-            
-            QPushButton{
-                background-color: #398cef; 
-                color: white;
-                border-radius: 10px;
-            }
-            
-            QPushButton:pressed {
-                background-color: #7bc8da;
-                color: white;
-            }              
-        """)
+    
+    def convert_docx_to_pdf(self, docx_path, output_pdf_path):
+        # Call LibreOffice to convert the document
+        subprocess.run(['/Applications/LibreOffice.app/Contents/MacOS/soffice', '--headless', '--convert-to', 'pdf', docx_path, '--outdir', output_pdf_path])
 
-        # Create form container widget to hold form
-        form_cont = QWidget()
-        form_cont.setObjectName("formContainer")
-        form_cont.setFixedHeight(700)
-        form_cont.setStyleSheet("""
-            #formContainer {
-            background-color: white; 
-            border-radius: 10px; 
-            border: 1px solid lightgray;
-            }
-        """) 
+        # generate preview
+        pdf_file_path = f"{output_pdf_path}/{self.company}_Arianna_Foo_Cover_Letter.pdf"
 
-        # Create vertical layout
-        v_layout = QVBoxLayout() 
-        v_layout.addStretch() # Add stretchable space at the top to push widgets downward
-
-        # HBox
-        h_layout = QHBoxLayout()
-        h_layout.addWidget(dest_button, alignment=Qt.AlignCenter)
-        h_layout.addWidget(self.destination_lbl, alignment=Qt.AlignCenter)
-
-        v_layout.addLayout(h_layout)
-        v_layout.addItem(QSpacerItem(20, 25, QSizePolicy.Minimum, QSizePolicy.Expanding))
-        v_layout.addWidget(button, alignment=Qt.AlignCenter)
-
-        # Push widgets upward
-        v_layout.addStretch()
-
-        # Add v_layout to form container
-        form_cont.setLayout(v_layout)
-
-        # Create a layout to center the form container
-        outer_layout = QVBoxLayout()
-        outer_layout.addStretch() # Add space at the top
-
-        hbox = QHBoxLayout()
-        hbox.addStretch() # Add space to left
-        hbox.addWidget(form_cont) # Add inner container to center
-        hbox.addStretch() # Add space to right
-
-        outer_layout.addLayout(hbox)
-        outer_layout.addStretch() # Add space at the buttom
-
-        container = QWidget()
-        container.setLayout(outer_layout)
-        self.setCentralWidget(container)
-        '''
-
-    def create_preview_page(self):
-        new_page = QWidget()
-        layout = QVBoxLayout()
-
-        # Show message
-
-        # back button
-        back_button = QPushButton("Start Over")
-        back_button.setFixedSize(200, 30)
-        back_button.clicked.connect(self.setup_ui) 
-        back_button.setStyleSheet("""
-            
-            QPushButton{
-                background-color: #398cef; 
-                color: white;
-                border-radius: 10px;
-            }
-            
-            QPushButton:pressed {
-                background-color: #7bc8da;
-                color: white;
-            }              
-        """)
-
-        # preview
-        # Load and scale the image to fit the window size
-        image = QPixmap(f"output_previews/{self.company}_CL.jpg")
-        screen_size = self.size()  # Get the current window size
-        scaled_width = int(screen_size.width() * 0.95)
-        scaled_height = int(screen_size.height() * 0.95)
-        scaled_image = image.scaled(scaled_width, scaled_height, Qt.KeepAspectRatio, Qt.SmoothTransformation)
-
-        # Create QLabel to hold the scaled image
-        image_label = QLabel()
-        image_label.setPixmap(scaled_image)
-        image_label.setAlignment(Qt.AlignCenter)
-
-        # Adding to Vbox layout
-        layout.addWidget(image_label, alignment=Qt.AlignCenter)
-        layout.addWidget(back_button, alignment=Qt.AlignCenter)
-
-
-        new_page.setLayout(layout)
-        self.setCentralWidget(new_page)
-
-    def on_save_btn_clicked(self):
-
-         # need to parse input path because it includes html
-        labels = self.inputs[3].text()
-        path = labels.split('"/> ')[-1]
-        destination = self.destination_lbl.text()
+        # new_preview = Preview(f"{output_pdf_path}/{self.company}_AriannaFoo_CL.pdf", self.company)
+    
         
-        if any(input.text() == "" for input in self.inputs) or (path == "No file selected.") or (destination == ""):
-            self.showEmptyMessage()
+        if os.path.exists(pdf_file_path):
+            print("---PATH EXISTS---")
+            new_preview = Preview(pdf_file_path, self.company)
+            new_preview.generate_preview()
         else:
-            self.generate_preview()
-            self.create_preview_page()
-
-    def showEmptyMessage(self):
-        msg = QMessageBox() 
-        msg.setIcon(QMessageBox.Information) 
-  
-        # setting message for Message Box 
-        msg.setText("Please complete all fields to continue.") 
+            print(f"Error: PDF file not found at {pdf_file_path}")
         
-        # setting Message box window title 
-        msg.setWindowTitle("Incomplete Fields") 
-        
-        # declaring buttons on Message Box 
-        msg.setStandardButtons(QMessageBox.Ok) 
-        
-        # start the app 
-        msg.exec_() 
-    
-    def on_location_btn_clicked(self):
-        dest_dir = QFileDialog.getExistingDirectory(self, "Select Destination Folder", "/Users/ariannafoo/Documents/Cover letter")
-        self.destination_lbl.setText(dest_dir)
-    
-    def showSavedMessage(self):
-        msg = QMessageBox() 
-        msg.setIcon(QMessageBox.Information) 
-  
-        # setting message for Message Box 
-        msg.setText("Cover letter fields replaced and saved successfully.") 
-        
-        # setting Message box window title 
-        msg.setWindowTitle("Success!") 
-        
-        # declaring buttons on Message Box 
-        msg.setStandardButtons(QMessageBox.Ok) 
-        
-        # start the app 
-        msg.exec_() 
+        # new_preview.generate_preview()
 
-    def generate_preview(self):
-        """
-        Generate cover letter preview based on user input.
-        """
-        path = self.inputs[3].text().split('"/> ')[-1]
-        self.company = self.inputs[1].text()
-        city = self.inputs[0].text()
-        position = self.inputs[2].text()
-        destination = self.destination_lbl.text()
-
-        if self.company.endswith('s'):
-            s = "'"
-        else:
-            s = "'s"
-
-        new_cover_letter = CoverLetter(path, self.date_str, self.company, city, position, s, destination)
-        new_cover_letter.replacePlaceholders()
-
-    def update_selected_date(self, date):
-        # The 'date' argument is automatically passed by the signal
-        self.date = date
-        self.date_str = date.toString("MMMM d, yyyy") 
-        
-def main():
-    app = QApplication([])
-
-    # Creating window instance
-    window = MainWindow()
-    window.show()
-
-    app.exec_()
-
-if __name__ == "__main__":
-    main()
+    """ TODO
+    - save job to excel sheet
+    - better way to open folder label
+    """
