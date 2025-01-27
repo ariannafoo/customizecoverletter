@@ -2,7 +2,7 @@ import sys
 import os
 from datetime import date
 from cover_letter import CoverLetter
-
+from helper import isEmpty
 from PyQt5.QtCore import QSize, Qt, QDate
 from PyQt5.QtGui import *
 from PyQt5.QtWidgets import *
@@ -265,11 +265,10 @@ class MainWindow(QWidget):
         company = self.fields[0][1].text()
         city = self.fields[1][1].text()
         position = self.fields[2][1].text()
+        suffix = "'" if company.endswith('s') else "'s"
 
-        s = "'" if company.endswith('s') else "'s"
-
-        new_cover_letter = CoverLetter()
-        new_cover_letter.replacePlaceholders()
+        new_cover_letter = CoverLetter(company, city, position, suffix, self.file_path, self.destination_path)
+        new_cover_letter.generate_cover_letter()
 
 
     def create_preview_page(self):
@@ -313,19 +312,12 @@ class MainWindow(QWidget):
         layout.addWidget(image_label, alignment=Qt.AlignCenter)
         layout.addWidget(back_button, alignment=Qt.AlignCenter)
 
-
         new_page.setLayout(layout)
         self.setCentralWidget(new_page)
     
     # ============================================
     #              Main Function
     # ============================================
-
-def isEmpty(string):
-    """
-    Return true if the string is empty, false otherwise.
-    """
-    return string == ""      
 
 def main():
     app = QApplication([])

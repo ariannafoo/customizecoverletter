@@ -4,21 +4,23 @@ from datetime import date
 from docx.shared import Pt, RGBColor
 from io import BytesIO
 from preview import Preview
+from helper import isNotEmpty
 import os
 import subprocess
 
 class CoverLetter():
 
-    def __init__(self, company, city, position, s, document_path, destination):
+    def __init__(self, company, city, position, suffix, document_path, destination):
 
         # User inputs
         self.date = date.today().strftime("%B %d, %Y")
         self.company = company
         self.city = city
         self.position = position
-        self.s = s
+        self.suffix = suffix
         self.document = Document(document_path)
         self.destinaton = destination
+        self.file_path = ""
        
         # Define style
         self.defineDocumentStyles()
@@ -30,7 +32,7 @@ class CoverLetter():
             '{CITY}': self.city,
             '{C_POSITION}': self.position,
             '{POSITION}': self.position,
-            '{S}': self.s
+            '{S}': self.suffix
         }
 
     def defineDocumentStyles(self):
@@ -49,10 +51,20 @@ class CoverLetter():
         font_2.color.rgb = RGBColor(74, 134, 232)
         font_2.bold = True
     
-    # TODO: edit colour and font in one placeholder
-    def replacePlaceholders(self):
+    def generate_cover_letter(self):
         """
-        Replace placeholders in the cover letter and save new cover letter.
+        Return file path and destination and save docx to destination.
+        """
+        # Create word document
+        self.create_cover_letter_docx()
+
+        # Create pdf document
+        if(isNotEmpty(self.file_path) or not isNotEmpty(self.destinaton)):
+            self.convert_docx_to_pdf(self.file_path, self.destinaton)
+
+    def create_cover_letter_docx(self):
+        """
+        Replace fields and save new docx to destination.
         """
         all_paragraphs = self.document.paragraphs
 
@@ -66,25 +78,17 @@ class CoverLetter():
                         paragraph.text = paragraph.text.replace(key, value)
                         paragraph.style = self.reg_style
 
-        # save as pdf
-        file_path = os.path.join(self.destinaton, f"{self.company}_Arianna_Foo_Cover_Letter.docx")
-        self.document.save(file_path)
-        print("--------------------------------------------------------------\n")
-        print(f"Converting from: {file_path}")
-        print(f"Saving PDF to: {self.destinaton}")
-        print("--------------------------------------------------------------\n")
-        self.convert_docx_to_pdf(file_path, self.destinaton)
-        
+        # save as .docx
+        self.file_path = os.path.join(self.destinaton, f"{self.company}_Arianna_Foo_Cover_Letter.docx")
+        self.document.save(self.file_path)
+  
     
     def convert_docx_to_pdf(self, docx_path, output_pdf_path):
         # Call LibreOffice to convert the document
         subprocess.run(['/Applications/LibreOffice.app/Contents/MacOS/soffice', '--headless', '--convert-to', 'pdf', docx_path, '--outdir', output_pdf_path])
 
         # generate preview
-        pdf_file_path = f"{output_pdf_path}/{self.company}_Arianna_Foo_Cover_Letter.pdf"
-
-        # new_preview = Preview(f"{output_pdf_path}/{self.company}_AriannaFoo_CL.pdf", self.company)
-    
+        pdf_file_path = f"{output_pdf_path}/{self.company}_Arianna_Foo_Cover_Letter.pdf"    
         
         if os.path.exists(pdf_file_path):
             print("---PATH EXISTS---")
@@ -97,5 +101,4 @@ class CoverLetter():
 
     """ TODO
     - save job to excel sheet
-    - better way to open folder label
     """
