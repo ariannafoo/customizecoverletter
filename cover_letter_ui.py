@@ -6,7 +6,7 @@ from PyQt5.QtCore import Qt
 from PyQt5.QtGui import *
 from PyQt5.QtWidgets import *
 
-class MainWindow(QWidget):
+class MainWindow(QMainWindow):
 
     def __init__(self): 
         super().__init__()
@@ -24,66 +24,14 @@ class MainWindow(QWidget):
         """
         Setup the UI elements of the window.
         """
+        main_widget = QWidget()
         main_layout = QVBoxLayout(self)
-
-        # ============================================
-        #              Top Nav Bar Creation
-        # ============================================
-
-        top_nav_layout = QHBoxLayout()
-        top_nav_layout.setSpacing(20)
-        top_nav_layout.setContentsMargins(15, 10, 15, 10)
-
-        title = QLabel("Cover Letter Customizer")
-        title.setStyleSheet("color: white; font-size: 18px; font-weight: bold;")
-        title.setAlignment(Qt.AlignLeft)
-
-        # Add items to the top navigation bar
-        top_nav_layout.addWidget(title, alignment=Qt.AlignLeft)
-        top_nav_layout.addStretch()
-    
-        top_nav_container = QFrame()
-        top_nav_container.setLayout(top_nav_layout)
-        top_nav_container.setStyleSheet("background-color: #398cef;")
-        top_nav_container.setFixedHeight(50)
-        main_layout.addWidget(top_nav_container)
-
-        # Main Content Layout (Side Navigation and Form)
         content_layout = QHBoxLayout()
 
-        # ============================================
-        #              Side Bar Creation
-        # ============================================
-
-        side_nav_layout = QVBoxLayout()
-        side_nav_layout.setSpacing(20)
-
-        steps = [
-            "Step One\nEnter position details",
-            "Step Two\nPreview letter",
-            "Step Three\nSave",
-            "Step Four\nN/A",
-            "Step Five\nN/A",
-            "Step Six\nN/A"
-        ]
-        # TODO: Fix hightlighting
-        for i, step in enumerate(steps, start=1):
-            step_label = QLabel(step)
-            step_label.setAlignment(Qt.AlignLeft)
-            step_label.setStyleSheet(f"""
-                QLabel {{
-                    color: {'#f8faff' if i <= 3 else 'lightgray'};
-                    font-size: 14px;
-                    font-weight: {'bold' if i == 3 else 'normal'};
-                }}
-            """)
-            side_nav_layout.addWidget(step_label)
-
-        # Add navigation to the left of the main layout
-        side_nav_container = QWidget()
-        side_nav_container.setLayout(side_nav_layout)
-        side_nav_container.setFixedWidth(200)
-        content_layout.addWidget(side_nav_container)
+        # Call main_layout_ui - get ui for top and side nav
+        top_nav, side_nav = self.main_layout_ui()
+        main_layout.addWidget(top_nav)
+        content_layout.addWidget(side_nav)
 
         # ============================================
         #              Form Creation
@@ -192,11 +140,67 @@ class MainWindow(QWidget):
 
         # Add content to the main layout
         main_layout.addLayout(content_layout)
+        main_widget.setLayout(main_layout)
+        self.setCentralWidget(main_widget)
     
 
     # ============================================
     #              Helper Functions
     # ============================================
+
+    def main_layout_ui(self):
+        """
+        Return tuple containing two elements: UI for the top bar and UI for side bar.
+        """
+        # ------------------------ Top Nav Bar ------------------------
+        top_nav_layout = QHBoxLayout()
+        top_nav_layout.setSpacing(20)
+        top_nav_layout.setContentsMargins(15, 10, 15, 10)
+
+        title = QLabel("Cover Letter Customizer")
+        title.setStyleSheet("color: white; font-size: 18px; font-weight: bold;")
+        title.setAlignment(Qt.AlignLeft)
+
+        # Add items to the top navigation bar
+        top_nav_layout.addWidget(title, alignment=Qt.AlignLeft)
+        top_nav_layout.addStretch()
+    
+        top_nav_container = QFrame()
+        top_nav_container.setLayout(top_nav_layout)
+        top_nav_container.setStyleSheet("background-color: #398cef;")
+        top_nav_container.setFixedHeight(50)
+
+        # ------------------------ Side Bar ------------------------
+        side_nav_layout = QVBoxLayout()
+        side_nav_layout.setSpacing(20)
+
+        steps = [
+            "Step One\nEnter position details",
+            "Step Two\nPreview letter",
+            "Step Three\nSave",
+            "Step Four\nN/A",
+            "Step Five\nN/A",
+            "Step Six\nN/A"
+        ]
+        # TODO: Fix hightlighting
+        for i, step in enumerate(steps, start=1):
+            step_label = QLabel(step)
+            step_label.setAlignment(Qt.AlignLeft)
+            step_label.setStyleSheet(f"""
+                QLabel {{
+                    color: {'#f8faff' if i <= 3 else 'lightgray'};
+                    font-size: 14px;
+                    font-weight: {'bold' if i == 3 else 'normal'};
+                }}
+            """)
+            side_nav_layout.addWidget(step_label)
+
+        # Add navigation to the left of the main layout
+        side_nav_container = QWidget()
+        side_nav_container.setLayout(side_nav_layout)
+        side_nav_container.setFixedWidth(200)
+
+        return (top_nav_container, side_nav_container)
 
     def open_file_dialog(self):
         """
@@ -253,24 +257,24 @@ class MainWindow(QWidget):
             self.showEmptyMessage()
         # Otherwise create preview + and display preview page
         else:
-            print("elloo")
-            self.generate_preview()
-            self.create_preview_page()
+            company = self.generate_preview()
+            self.show_preview_page(company)
 
     def generate_preview(self):
         """
         Generate cover letter preview based on user input.
         """
-        company = self.fields[0][1].text()
-        city = self.fields[1][1].text()
+        city = self.fields[0][1].text()
+        company = self.fields[1][1].text()
         position = self.fields[2][1].text()
         suffix = "'" if company.endswith('s') else "'s"
 
         new_cover_letter = CoverLetter(company, city, position, suffix, self.file_path, self.destination_path)
         new_cover_letter.generate_cover_letter()
+        return company
 
 
-    def create_preview_page(self):
+    def show_preview_page(self, company):
         new_page = QWidget()
         layout = QVBoxLayout()
 
@@ -296,7 +300,7 @@ class MainWindow(QWidget):
 
         # preview
         # Load and scale the image to fit the window size
-        image = QPixmap(f"output_previews/{self.company}_CL.jpg")
+        image = QPixmap(f"output_previews/{company}_CL.jpg")
         screen_size = self.size()  # Get the current window size
         scaled_width = int(screen_size.width() * 0.95)
         scaled_height = int(screen_size.height() * 0.95)
@@ -311,9 +315,57 @@ class MainWindow(QWidget):
         layout.addWidget(image_label, alignment=Qt.AlignCenter)
         layout.addWidget(back_button, alignment=Qt.AlignCenter)
 
+
         new_page.setLayout(layout)
         self.setCentralWidget(new_page)
-    
-    # ============================================
-    #              Main Function
-    # ============================================
+    #     # Create a new widget to represent the preview page
+    #     preview_page = QWidget()
+    #     preview_layout = QVBoxLayout(preview_page)
+
+    #     # Create top and side navigation bars (if required)
+    #     top_nav, side_nav = self.main_layout_ui()
+    #     preview_layout.addWidget(top_nav)  # Add top navigation bar
+    #     preview_layout.addWidget(side_nav)  # Add side navigation bar
+
+    #     # Content layout for the preview
+    #     content_layout = QVBoxLayout()
+
+    #     # Load and scale the preview image (make sure this path exists)
+    #     preview_image_path = f"output_previews/{company}_CL.jpg"
+    #     if os.path.exists(preview_image_path):
+    #         image = QPixmap(preview_image_path)
+    #         image_label = QLabel()
+    #         image_label.setPixmap(image.scaled(self.size(), Qt.KeepAspectRatio, Qt.SmoothTransformation))
+    #         image_label.setAlignment(Qt.AlignCenter)
+    #         content_layout.addWidget(image_label)
+    #     else:
+    #         error_label = QLabel("Preview image not found.")
+    #         error_label.setStyleSheet("color: red; font-size: 16px;")
+    #         error_label.setAlignment(Qt.AlignCenter)
+    #         content_layout.addWidget(error_label)
+
+    #     # Back button
+    #     back_button = QPushButton("Start Over")
+    #     back_button.setFixedSize(200, 30)
+    #     back_button.clicked.connect(self.setup_ui)  # Reset to the original UI
+    #     back_button.setStyleSheet("""
+    #         QPushButton {
+    #             background-color: #398cef; 
+    #             color: white;
+    #             border-radius: 10px;
+    #         }
+    #         QPushButton:pressed {
+    #             background-color: #7bc8da;
+    #         }
+    #     """)
+    #     content_layout.addWidget(back_button, alignment=Qt.AlignCenter)
+
+    #     # Add content to the preview layout
+    #     preview_layout.addLayout(content_layout)
+
+    #     # Create a QStackedWidget to handle page switching
+    #     stacked_widget = QStackedWidget()
+    #     stacked_widget.addWidget(preview_page)
+
+    #     # Set the stacked widget as the central widget
+    #     self.setCentralWidget(stacked_widget)

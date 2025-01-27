@@ -8,6 +8,7 @@ def main():
     window = MainWindow()
     window.show()
 
+    # Run application
     app.exec_()
 
 if __name__ == "__main__":
