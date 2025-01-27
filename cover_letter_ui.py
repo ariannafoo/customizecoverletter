@@ -275,97 +275,55 @@ class MainWindow(QMainWindow):
 
 
     def show_preview_page(self, company):
-        new_page = QWidget()
-        layout = QVBoxLayout()
 
-        # Show message
+        # Create a new widget to represent the preview page
+        preview_page = QWidget()
+        preview_layout = QVBoxLayout(preview_page)
 
-        # back button
+        # Create top and side navigation bars (if required)
+        top_nav, side_nav = self.main_layout_ui()
+        preview_layout.addWidget(top_nav)  # Add top navigation bar
+        preview_layout.addWidget(side_nav)  # Add side navigation bar
+
+        # Content layout for the preview
+        content_layout = QVBoxLayout()
+
+        # Load and scale the preview image (make sure this path exists)
+        preview_image_path = f"output_previews/{company}_CL.jpg"
+        if os.path.exists(preview_image_path):
+            image = QPixmap(preview_image_path)
+            image_label = QLabel()
+            image_label.setPixmap(image.scaled(self.size(), Qt.KeepAspectRatio, Qt.SmoothTransformation))
+            image_label.setAlignment(Qt.AlignCenter)
+            content_layout.addWidget(image_label)
+        else:
+            error_label = QLabel("Preview image not found.")
+            error_label.setStyleSheet("color: red; font-size: 16px;")
+            error_label.setAlignment(Qt.AlignCenter)
+            content_layout.addWidget(error_label)
+
+        # Back button
         back_button = QPushButton("Start Over")
         back_button.setFixedSize(200, 30)
-        back_button.clicked.connect(self.setup_ui) 
+        back_button.clicked.connect(self.setup_ui)  # Reset to the original UI
         back_button.setStyleSheet("""
-            
-            QPushButton{
+            QPushButton {
                 background-color: #398cef; 
                 color: white;
                 border-radius: 10px;
             }
-            
             QPushButton:pressed {
                 background-color: #7bc8da;
-                color: white;
-            }              
+            }
         """)
+        content_layout.addWidget(back_button, alignment=Qt.AlignCenter)
 
-        # preview
-        # Load and scale the image to fit the window size
-        image = QPixmap(f"output_previews/{company}_CL.jpg")
-        screen_size = self.size()  # Get the current window size
-        scaled_width = int(screen_size.width() * 0.95)
-        scaled_height = int(screen_size.height() * 0.95)
-        scaled_image = image.scaled(scaled_width, scaled_height, Qt.KeepAspectRatio, Qt.SmoothTransformation)
+        # Add content to the preview layout
+        preview_layout.addLayout(content_layout)
 
-        # Create QLabel to hold the scaled image
-        image_label = QLabel()
-        image_label.setPixmap(scaled_image)
-        image_label.setAlignment(Qt.AlignCenter)
+        # Create a QStackedWidget to handle page switching
+        stacked_widget = QStackedWidget()
+        stacked_widget.addWidget(preview_page)
 
-        # Adding to Vbox layout
-        layout.addWidget(image_label, alignment=Qt.AlignCenter)
-        layout.addWidget(back_button, alignment=Qt.AlignCenter)
-
-
-        new_page.setLayout(layout)
-        self.setCentralWidget(new_page)
-    #     # Create a new widget to represent the preview page
-    #     preview_page = QWidget()
-    #     preview_layout = QVBoxLayout(preview_page)
-
-    #     # Create top and side navigation bars (if required)
-    #     top_nav, side_nav = self.main_layout_ui()
-    #     preview_layout.addWidget(top_nav)  # Add top navigation bar
-    #     preview_layout.addWidget(side_nav)  # Add side navigation bar
-
-    #     # Content layout for the preview
-    #     content_layout = QVBoxLayout()
-
-    #     # Load and scale the preview image (make sure this path exists)
-    #     preview_image_path = f"output_previews/{company}_CL.jpg"
-    #     if os.path.exists(preview_image_path):
-    #         image = QPixmap(preview_image_path)
-    #         image_label = QLabel()
-    #         image_label.setPixmap(image.scaled(self.size(), Qt.KeepAspectRatio, Qt.SmoothTransformation))
-    #         image_label.setAlignment(Qt.AlignCenter)
-    #         content_layout.addWidget(image_label)
-    #     else:
-    #         error_label = QLabel("Preview image not found.")
-    #         error_label.setStyleSheet("color: red; font-size: 16px;")
-    #         error_label.setAlignment(Qt.AlignCenter)
-    #         content_layout.addWidget(error_label)
-
-    #     # Back button
-    #     back_button = QPushButton("Start Over")
-    #     back_button.setFixedSize(200, 30)
-    #     back_button.clicked.connect(self.setup_ui)  # Reset to the original UI
-    #     back_button.setStyleSheet("""
-    #         QPushButton {
-    #             background-color: #398cef; 
-    #             color: white;
-    #             border-radius: 10px;
-    #         }
-    #         QPushButton:pressed {
-    #             background-color: #7bc8da;
-    #         }
-    #     """)
-    #     content_layout.addWidget(back_button, alignment=Qt.AlignCenter)
-
-    #     # Add content to the preview layout
-    #     preview_layout.addLayout(content_layout)
-
-    #     # Create a QStackedWidget to handle page switching
-    #     stacked_widget = QStackedWidget()
-    #     stacked_widget.addWidget(preview_page)
-
-    #     # Set the stacked widget as the central widget
-    #     self.setCentralWidget(stacked_widget)
+        # Set the stacked widget as the central widget
+        self.setCentralWidget(stacked_widget)
