@@ -1,9 +1,8 @@
-import sys
 import os
-from datetime import date
 from cover_letter import CoverLetter
 from helper import isEmpty
-from PyQt5.QtCore import QSize, Qt, QDate
+from datetime import date
+from PyQt5.QtCore import Qt
 from PyQt5.QtGui import *
 from PyQt5.QtWidgets import *
 
@@ -318,15 +317,3 @@ class MainWindow(QWidget):
     # ============================================
     #              Main Function
     # ============================================
-
-def main():
-    app = QApplication([])
-
-    # Creating window instance
-    window = MainWindow()
-    window.show()
-
-    app.exec_()
-
-if __name__ == "__main__":
-    main()
