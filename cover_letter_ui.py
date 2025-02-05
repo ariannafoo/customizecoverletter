@@ -281,7 +281,7 @@ class MainWindow(QMainWindow):
 
         # Create a new widget to represent the preview page
         preview_page = QWidget()
-        preview_layout = QVBoxLayout(preview_page)
+        preview_layout = QVBoxLayout(self)
 
         # Create top and side navigation bars (if required)
         top_nav, side_nav = self.main_layout_ui()

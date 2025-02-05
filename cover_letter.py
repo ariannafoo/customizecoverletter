@@ -96,5 +96,3 @@ class CoverLetter():
             new_preview.generate_preview()
         else:
             print(f"Error: PDF file not found at {pdf_file_path}")
-        
-        # new_preview.generate_preview()

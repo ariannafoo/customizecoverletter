@@ -198,8 +198,9 @@ class HomePage(QWidget):
         # Otherwise create preview + and display preview page
         else:
             company = self.generate_preview()
+            preview_page = self.stacked_widget.widget(1)  # Get the preview page
+            preview_page.set_company(company)
             self.stacked_widget.setCurrentIndex(1)
-            # self.show_preview_page(company)
 
     def generate_preview(self):
         """
