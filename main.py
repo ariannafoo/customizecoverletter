@@ -1,8 +1,8 @@
 import sys
 from PyQt5.QtWidgets import QApplication
 from PyQt5.QtWidgets import QApplication, QWidget, QVBoxLayout, QStackedWidget
-from home_page import HomePage
-from preview_page import PreviewPage
+from app.views.home_page import HomePage
+from app.views.preview_page import PreviewPage
 
 class MainWindow(QWidget):
     def __init__(self):
