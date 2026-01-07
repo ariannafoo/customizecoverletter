@@ -30,7 +30,6 @@ class CoverLetter():
             '{DATE}': self.date,
             '{COMPANY}': self.company,
             '{CITY}': self.city,
-            '{C_POSITION}': self.position,
             '{POSITION}': self.position,
             '{S}': self.suffix
         }
@@ -43,13 +42,6 @@ class CoverLetter():
         font_1 = self.reg_style.font
         font_1.name = 'Calibri'
         font_1.size = Pt(11)
-
-        self.coloured_style = self.document.styles['Coloured']
-        font_2 = self.coloured_style.font
-        font_2.name = 'Calibri'
-        font_2.size = Pt(11)
-        font_2.color.rgb = RGBColor(74, 134, 232)
-        font_2.bold = True
     
     def generate_cover_letter(self):
         """
@@ -71,10 +63,6 @@ class CoverLetter():
         for key, value in self.replacements.items():
             for paragraph in all_paragraphs:
                 if key in paragraph.text:
-                    if key == "{C_POSITION}":
-                        paragraph.text = paragraph.text.replace(key, value)
-                        paragraph.style = self.coloured_style
-                    else:
                         paragraph.text = paragraph.text.replace(key, value)
                         paragraph.style = self.reg_style
 
