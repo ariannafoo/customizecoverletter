@@ -211,6 +211,7 @@ class HomePage(QWidget):
         position = self.fields[2][1].text()
         suffix = "'" if company.endswith('s') else "'s"
 
+        # Creates a new .docx and converts to PDF
         new_cover_letter = CoverLetter(company, city, position, suffix, self.file_path, self.destination_path)
         new_cover_letter.generate_cover_letter()
         return company

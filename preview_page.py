@@ -9,14 +9,20 @@ class PreviewPage(QWidget):
         self.stacked_widget = stacked_widget  # Store reference to stacked widget
         self._company = ""
 
+        # One label that updates (avoids recreating it every time)
+        self.image_label = QLabel("No preview yet.")
+        self.image_label.setAlignment(Qt.AlignCenter)
+
         self.setup_ui()
     
     def set_company(self, company_name):
         self._company = company_name
+        self.update_preview_image()  
 
     def get_company(self):
         if (isNotEmpty(self._company)):
             return self._company
+        return None
 
     def setup_ui(self):
          # Create a new widget to represent the preview page
@@ -28,21 +34,8 @@ class PreviewPage(QWidget):
         main_layout.addWidget(top_nav)  # Add top navigation bar
         content_layout.addWidget(side_nav)  # Add side navigation bar
 
-        # Load and scale the preview image (make sure this path exists)
-        preview_image_path = f"output_previews/{self._company}_CL.jpg"
-        print(f"**************OUTPUT PATH**************")
-        print(preview_image_path)
-        if os.path.exists(preview_image_path):
-            image = QPixmap(preview_image_path)
-            image_label = QLabel()
-            image_label.setPixmap(image.scaled(self.size(), Qt.KeepAspectRatio, Qt.SmoothTransformation))
-            image_label.setAlignment(Qt.AlignCenter)
-            content_layout.addWidget(image_label)
-        else:
-            error_label = QLabel("Preview image not found.")
-            error_label.setStyleSheet("color: red; font-size: 16px;")
-            error_label.setAlignment(Qt.AlignCenter)
-            content_layout.addWidget(error_label)
+         # Add the image label to the layout once
+        content_layout.addWidget(self.image_label, stretch=1)
 
         # Back button
         back_button = QPushButton("Start Over")
@@ -60,10 +53,25 @@ class PreviewPage(QWidget):
         """)
         content_layout.addWidget(back_button, alignment=Qt.AlignCenter)
 
-        # Maybe add a frame to increase ui
-
         # Add content to the main layout
         main_layout.addLayout(content_layout)
+
+    def update_preview_image(self):
+
+        # Load and scale the preview image (make sure this path exists)
+        preview_image_path = f"output_previews/{self._company}_CL.jpg"
+        print(f"**************OUTPUT PATH**************")
+        print(preview_image_path)
+
+        if os.path.exists(preview_image_path):
+            image = QPixmap(preview_image_path)
+            # self.image_label.setStyleSheet("")   # clear error styling
+            # self.image_label.setText("")  
+            self.image_label.setPixmap(image.scaled(self.size(), Qt.KeepAspectRatio, Qt.SmoothTransformation))
+        else:
+            self.image_label.setPixmap(QPixmap())
+            self.image_label.setText("Preview image not found.")
+            self.image_label.setStyleSheet("color: red; font-size: 16px;")
 
     def on__back_button_clicked(self):
         """Handle button click event to go back to PageOne."""
